@@ -1,0 +1,1 @@
+<?php if($this->cart->total_items() == 0){echo 0;}else{echo $this->cart->total_items();};?>

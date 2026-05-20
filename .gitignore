@@ -1,0 +1,20 @@
+# Sensitive config - copy from *.example and fill in your values
+application/config/database.php
+application/config/facebook.php
+
+# User uploads
+uploads/
+
+# Composer dependencies (run: composer install)
+vendor/
+
+# CodeIgniter cache & logs
+application/cache/db/
+application/logs/*.php
+
+# Claude Code memory
+.claude/
+
+# OS files
+.DS_Store
+Thumbs.db

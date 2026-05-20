@@ -1,0 +1,13 @@
+{
+    "require": {
+        "phpmailer/phpmailer": "^6.5",
+        "google/apiclient": "^2.0",
+        "mercadopago/dx-php": "2.5.0",
+        "mollie/mollie-api-php": "^2.0",
+        "orhanerday/open-ai": "^4.7",
+        "ultramsg/whatsapp-php-sdk": "^2.0",
+        "iyzico/iyzipay-php": "^2.0",
+        "chillerlan/php-qrcode": "^5.0",
+        "bacon/bacon-qr-code": "^3.0"
+    }
+}
