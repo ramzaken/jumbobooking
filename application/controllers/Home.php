@@ -411,7 +411,8 @@ class Home extends Home_Controller {
         $data['page_title'] = "Error 404";
         $data['description'] = "Error 404";
         $data['keywords'] = "error,404";
-        $this->load->view('error_404');
+        $data['main_content'] = $this->load->view('theme/error_404', $data, TRUE);
+        $this->load->view('index', $data);
     }
 
     public function test_break_slots()
