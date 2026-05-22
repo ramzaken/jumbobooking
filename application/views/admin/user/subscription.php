@@ -226,3 +226,20 @@
     </div>
     <!-- /.content -->
 </div>
+<script>
+function updateUpgradeLinks() {
+    var billing = $('input[name="price_type"]:checked').val() || '<?php echo html_escape($user->billing_type); ?>';
+    $('.package_btn').each(function() {
+        var href = $(this).attr('href');
+        // strip any existing billing_type segment and re-append
+        href = href.replace(/\/(monthly|yearly|lifetime)$/, '');
+        $(this).attr('href', href + '/' + billing);
+    });
+}
+$(document).ready(function() {
+    updateUpgradeLinks();
+    $('.switch_price').on('change', function() {
+        updateUpgradeLinks();
+    });
+});
+</script>
