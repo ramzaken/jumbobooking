@@ -231,72 +231,80 @@ class Subscription extends Home_Controller {
     }
 
 
-    //stripe payment
-    public function stripe_payment()
+    //stripe payment intent creation (AJAX)
+    public function create_stripe_intent()
     {
+        header('Content-Type: application/json');
 
         $id = $this->input->post('package_id');
-        $puid = $this->input->post('payment_id');
-        $package = $this->common_model->get_by_id($id, 'package');
         $billing_type = $this->input->post('billing_type');
-        
-        if($billing_type =='monthly'):
-            $amount = round($package->monthly_price); 
-            $expire_on = date('Y-m-d', strtotime('+1 month'));
-        else:
-            $amount = round($package->price); 
-            $expire_on = date('Y-m-d', strtotime('+12 month'));
-        endif;
+        $package = $this->common_model->get_by_id($id, 'package');
+
+        if ($billing_type == 'monthly') {
+            $amount = round($package->monthly_price);
+        } elseif ($billing_type == 'lifetime') {
+            $amount = round($package->lifetime_price);
+        } else {
+            $amount = round($package->price);
+        }
 
         $amount = get_tax($amount, settings()->tax_value);
         $amount = intval($amount * 100);
 
         if (!empty($this->session->userdata('coupon'))) {
             $coupon = $this->admin_model->get_coupon_by_code($this->session->userdata('coupon'));
-            $amount = $amount - ($amount * ($coupon->discount/100));
+            $amount = intval($amount - ($amount * ($coupon->discount / 100)));
         }
 
         if (settings()->card_fee != 0) {
             $amount = $amount + settings()->card_fee;
         }
 
-        //echo "<pre>"; print_r($amount/100); exit();
-        
         require_once('application/libraries/stripe-php/init.php');
         \Stripe\Stripe::setApiKey(settings()->secret_key);
-        
+
         try {
-            $customer = \Stripe\Customer::create(array(
-                'name' => user()->name,
-                'email' => user()->email,
-                'source'  => $this->input->post('stripeToken')
-            ));
-
-
-            $charge = \Stripe\Charge::create ([
-                "customer" => $customer,
-                "amount" => $amount,
-                "currency" => settings()->currency_code,
-                "description" => "Payment from ".settings()->site_name 
+            $intent = \Stripe\PaymentIntent::create([
+                'amount'      => intval($amount),
+                'currency'    => settings()->currency_code,
+                'description' => 'Payment for ' . $package->name . ' - ' . settings()->site_name,
             ]);
-            $chargeJson = $charge->jsonSerialize();
-            
-            $amount                  = $chargeJson['amount']/100;
-            $balance_transaction     = $chargeJson['balance_transaction'];
-            $currency                = $chargeJson['currency'];
-            $status                  = $chargeJson['status'];
-            $payment = 'success';
-        }catch(Exception $e) { 
-            $error = $e->getMessage(); 
-            $this->session->set_flashdata('error', $error);
+            echo json_encode(['client_secret' => $intent->client_secret]);
+        } catch (Exception $e) {
+            http_response_code(500);
+            echo json_encode(['error' => $e->getMessage()]);
+        }
+        exit;
+    }
+
+
+    //stripe payment — verifies a completed PaymentIntent then records it
+    public function stripe_payment()
+    {
+        $id               = $this->input->post('package_id');
+        $puid             = $this->input->post('payment_id');
+        $billing_type     = $this->input->post('billing_type');
+        $payment_intent_id = $this->input->post('payment_intent_id');
+
+        require_once('application/libraries/stripe-php/init.php');
+        \Stripe\Stripe::setApiKey(settings()->secret_key);
+
+        try {
+            $intent  = \Stripe\PaymentIntent::retrieve($payment_intent_id);
+            $payment = ($intent->status === 'succeeded') ? 'success' : 'failed';
+            if ($payment === 'failed') {
+                $this->session->set_flashdata('error', 'Payment was not completed successfully.');
+            }
+        } catch (Exception $e) {
+            $this->session->set_flashdata('error', $e->getMessage());
             $payment = 'failed';
         }
 
-        if($payment == 'success'):  
-            redirect(base_url('admin/subscription/payment_success/'.$billing_type.'/'.$id.'/'.$puid.'/stripe'));
-        else:
-            redirect(base_url('admin/subscription/payment_cancel/'.$billing_type.'/'.$id.'/'.$puid));
-        endif;
+        if ($payment == 'success') {
+            redirect(base_url('admin/subscription/payment_success/' . $billing_type . '/' . $id . '/' . $puid . '/stripe'));
+        } else {
+            redirect(base_url('admin/subscription/payment_cancel/' . $billing_type . '/' . $id . '/' . $puid));
+        }
     }
 
 

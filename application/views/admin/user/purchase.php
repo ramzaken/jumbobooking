@@ -164,91 +164,107 @@
                                 <div class="tab-pane fade" id="stripe" role="tabpanel" aria-labelledby="stripe-tab">
                                     <div class="credit-card-box">
                                         <div class="d-flex justify-content-between">
-                                            <div class="pt-1"><h5><?php echo trans('card-details') ?></h5> </div>
+                                            <div class="pt-1"><h5><?php echo trans('card-details') ?></h5></div>
                                             <div>
-                                                <i class="text-primary fab fa-cc-visa fa-2x"></i> 
-                                                <i class="text-primary fab fa-cc-mastercard fa-2x"></i> 
-                                                <i class="text-primary fab fa-cc-discover fa-2x"></i> 
+                                                <i class="text-primary fab fa-cc-visa fa-2x"></i>
+                                                <i class="text-primary fab fa-cc-mastercard fa-2x"></i>
+                                                <i class="text-primary fab fa-cc-discover fa-2x"></i>
                                                 <i class="text-primary fab fa-cc-amex fa-2x"></i>
                                             </div>
                                         </div><hr>
-                                       
+
                                         <div class="box-body p-0">
-                            
-                                            <form role="form" action="<?php echo base_url('admin/subscription/stripe_payment') ?>" method="post" class="require-validation stripe_form" data-cc-on-file="false" data-stripe-publishable-key="<?php echo html_escape($settings->publish_key); ?>" id="payment-form">
-                                                
-                                                <div class='row'>
-                                                    <div class='col-xs-12 col-md-6 form-group required text-left'>
-                                                    </div>
-                                                    <div class='col-xs-12 col-md-6 form-group required text-left'>
-                                                    </div>
-                                                </div>
+                                            <label class="control-label text-left d-block mb-1"><?php echo trans('card-details') ?></label>
+                                            <div id="stripe-card-element" class="form-control mb-2" style="height:38px;padding-top:9px;"></div>
+                                            <div id="stripe-card-errors" class="text-danger small mb-2" role="alert"></div>
 
-                                                <div class='row'>
-                                                    <div class='col-xs-12 col-md-12 form-group required text-left'>
-                                                        <label class='control-label'><?php echo trans('card-number') ?></label> 
-                                                        <input autocomplete='off' class='textfield textfield--grey card-number'
-                                                            type='text' value="" size='6'>
-                                                    </div>
-                                                    <div class='col-xs-12 col-md-12 form-group required text-left'>
-                                                        <label class='control-label'><?php echo trans('cardholders-name') ?></label> 
-                                                        <input class='textfield textfield--grey' type='text' value="" size='6'>
-                                                    </div>
-                                                </div>
-                                    
+                                            <p class="mb-0 text-center"><?php echo trans('plan') ?>: <?php echo html_escape($package->name); ?></p>
+                                            <p class="mb-0"><strong><?php if(settings()->curr_locate == 0){echo settings()->currency_symbol;} ?><?php echo html_escape($price) ?> <?php if(settings()->curr_locate == 1){echo settings()->currency_symbol;} ?></strong> <small><?php echo html_escape($frequency) ?></small></p>
 
-                                                <div class='form-row row'>
-                                                    <div class='col-xs-12 col-md-4 form-group expiration required text-left'>
-                                                        <label class='control-label'><?php echo trans('month') ?></label> <input
-                                                            class='textfield textfield--grey card-expiry-month' placeholder='MM' size='2'
-                                                            type='text' value="">
-                                                    </div>
-                                                    <div class='col-xs-12 col-md-4 form-group expiration required text-left'>
-                                                        <label class='control-label'><?php echo trans('year') ?></label> <input
-                                                            class='textfield textfield--grey card-expiry-year' placeholder='YYYY' size='4'
-                                                            type='text' value="">
-                                                    </div>
-                                                    <div class='col-xs-12 col-md-4 form-group cvc required text-left'>
-                                                        <label class='control-label'>CVC</label> <input autocomplete='off'
-                                                            class='textfield textfield--grey card-cvc' placeholder='ex. 311' size='4'
-                                                            type='text' value="">
-                                                    </div>
-                                                </div>
+                                            <?php if (!empty($coupon)): ?>
+                                                <p class="small mb-0"><?php echo trans('discount') ?>: (<?php echo $coupon->discount ?>%)</p>
+                                            <?php endif ?>
 
-                                                <!-- csrf token -->
-                                                <input type="hidden" name="<?php echo $this->security->get_csrf_token_name();?>" value="<?php echo $this->security->get_csrf_hash();?>">
+                                            <?php if (settings()->tax_value != '' && settings()->tax_value != 0): ?>
+                                                <p class="small mb-0"><?php echo settings()->tax_name ?> (<?php echo settings()->tax_value ?>%)</p>
+                                            <?php endif ?>
 
-                                                <input type="hidden" name="billing_type" value="<?php echo html_escape($billing_type); ?>" readonly>
-                                                <input type="hidden" name="package_id" value="<?php echo html_escape($package->id); ?>" readonly>
-                                                <input type="hidden" name="payment_id" value="<?php echo html_escape($payment_id); ?>" readonly>
-                                                <div class="row">
-                                                    <div class="col-md-12">
-                                                        <p class="mb-0 text-center"><?php echo trans('plan') ?>: <?php echo html_escape($package->name);?> </p>
-                                                        <p class="mb-0"><strong><?php if(settings()->curr_locate == 0){echo settings()->currency_symbol;} ?><?php echo html_escape($price) ?> <?php if(settings()->curr_locate == 1){echo settings()->currency_symbol;} ?></strong> <small><?php echo html_escape($frequency) ?></small></p>
+                                            <?php if (settings()->card_fee != 0): ?>
+                                                <p class="small"><?php echo trans('card-processing-fee') ?> (<strong><?php if(settings()->curr_locate == 0){echo settings()->currency_symbol;} ?><?php echo html_escape(settings()->card_fee) ?><?php if(settings()->curr_locate == 1){echo settings()->currency_symbol;} ?></strong>)</p>
+                                            <?php endif ?>
 
-                                                        <?php if (!empty($coupon)): ?>
-                                                            <p class="small mb-0"><?php echo trans('discount') ?>: (<?php echo $coupon->discount ?>%)</p>
-                                                        <?php endif ?>
+                                            <div class="text-center text-success">
+                                                <div class="payment_loader hide"><i class="fa fa-spinner fa-spin"></i> <?php echo trans('loading') ?>....</div><br>
+                                            </div>
 
-                                                        <?php if (settings()->tax_value != '' && settings()->tax_value != 0): ?>
-                                                            <p class="small mb-0"><?php echo settings()->tax_name ?> (<?php echo settings()->tax_value ?>%)</p>
-                                                        <?php endif ?>
+                                            <button id="stripe-pay-btn" class="btn btn-primary btn-block" type="button"><?php echo trans('pay-now') ?></button>
 
-                                                        <?php if (settings()->card_fee != 0): ?>
-                                                            <p class="small"><?php echo trans('card-processing-fee') ?> (<strong><?php if(settings()->curr_locate == 0){echo settings()->currency_symbol;} ?><?php echo html_escape(settings()->card_fee) ?><?php if(settings()->curr_locate == 1){echo settings()->currency_symbol;} ?></strong>)</p>
-                                                        <?php endif ?>
-                                                                            
-                                                        <div class="text-center text-success">
-                                                            <div class="payment_loader hide"><i class="fa fa-spinner fa-spin"></i> <?php echo trans('loading') ?>....</div><br>
-                                                        </div>
-                                                        <button class="btn btn-primary payment_btn btn-block" type="submit"><?php echo trans('pay-now') ?></button>
-                                                    </div>
-                                                </div>
-                                                        
+                                            <form id="stripe-payment-form" action="<?php echo base_url('admin/subscription/stripe_payment') ?>" method="post">
+                                                <input type="hidden" name="<?php echo $this->security->get_csrf_token_name(); ?>" value="<?php echo $this->security->get_csrf_hash(); ?>">
+                                                <input type="hidden" name="billing_type" value="<?php echo html_escape($billing_type); ?>">
+                                                <input type="hidden" name="package_id" value="<?php echo html_escape($package->id); ?>">
+                                                <input type="hidden" name="payment_id" value="<?php echo html_escape($payment_id); ?>">
+                                                <input type="hidden" name="payment_intent_id" id="stripe-payment-intent-id" value="">
                                             </form>
                                         </div>
                                     </div>
                                 </div>
+
+                                <script src="https://js.stripe.com/v3/"></script>
+                                <script>
+                                (function () {
+                                    var stripe = Stripe('<?php echo html_escape($settings->publish_key); ?>');
+                                    var elements = stripe.elements();
+                                    var cardElement = elements.create('card', {style: {base: {fontSize: '16px'}}});
+                                    cardElement.mount('#stripe-card-element');
+
+                                    cardElement.on('change', function (event) {
+                                        document.getElementById('stripe-card-errors').textContent = event.error ? event.error.message : '';
+                                    });
+
+                                    document.getElementById('stripe-pay-btn').addEventListener('click', function () {
+                                        var btn = this;
+                                        btn.disabled = true;
+                                        $('.payment_loader').removeClass('hide');
+
+                                        $.ajax({
+                                            url: '<?php echo base_url('admin/subscription/create_stripe_intent'); ?>',
+                                            method: 'POST',
+                                            data: {
+                                                package_id: '<?php echo html_escape($package->id); ?>',
+                                                billing_type: '<?php echo html_escape($billing_type); ?>',
+                                                payment_id: '<?php echo html_escape($payment_id); ?>'
+                                            },
+                                            dataType: 'json',
+                                            success: function (data) {
+                                                if (data.error) {
+                                                    document.getElementById('stripe-card-errors').textContent = data.error;
+                                                    btn.disabled = false;
+                                                    $('.payment_loader').addClass('hide');
+                                                    return;
+                                                }
+                                                stripe.confirmCardPayment(data.client_secret, {
+                                                    payment_method: {card: cardElement}
+                                                }).then(function (result) {
+                                                    if (result.error) {
+                                                        document.getElementById('stripe-card-errors').textContent = result.error.message;
+                                                        btn.disabled = false;
+                                                        $('.payment_loader').addClass('hide');
+                                                    } else if (result.paymentIntent.status === 'succeeded') {
+                                                        document.getElementById('stripe-payment-intent-id').value = result.paymentIntent.id;
+                                                        document.getElementById('stripe-payment-form').submit();
+                                                    }
+                                                });
+                                            },
+                                            error: function () {
+                                                document.getElementById('stripe-card-errors').textContent = 'An error occurred. Please try again.';
+                                                btn.disabled = false;
+                                                $('.payment_loader').addClass('hide');
+                                            }
+                                        });
+                                    });
+                                })();
+                                </script>
 
                                 <div class="tab-pane fade" id="razorpay" role="tabpanel" aria-labelledby="razorpay-tab">
                                    <div class="box-body p-0">
