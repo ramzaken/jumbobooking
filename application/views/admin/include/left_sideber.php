@@ -54,10 +54,23 @@
                 </a>
               </li>
 
-              <li class="nav-item">
-                <a class="nav-link <?php if(isset($page) && $page == "EmailCampaigns"){echo "active";} ?>" href="<?php echo base_url('admin/email_campaigns') ?>">
-                  <i class="nav-icon bi bi-envelope-paper ml-2 mr-1"></i> <p>Email Campaigns</p>
+              <li class="nav-item has-treeview <?php if(isset($page) && $page == "EmailCampaigns"){echo "menu-open";} ?>">
+                <a href="#" class="nav-link <?php if(isset($page) && $page == "EmailCampaigns"){echo "active";} ?>">
+                  <i class="nav-icon bi bi-envelope-paper ml-2 mr-1"></i>
+                  <p>Email Campaigns <i class="right fas fa-angle-left"></i></p>
                 </a>
+                <ul class="nav nav-treeview">
+                  <li class="nav-item">
+                    <a class="nav-link <?php if(isset($page_title) && $page_title == "Email Campaigns" && (!isset($page_sub) || $page_sub != "golden_funnel")){echo "active";} ?>" href="<?php echo base_url('admin/email_campaigns') ?>">
+                      <i class="nav-icon bi bi-list-ul ml-3 mr-1"></i> <p>Campaigns</p>
+                    </a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link <?php if(isset($page_sub) && $page_sub == "golden_funnel"){echo "active";} ?>" href="<?php echo base_url('admin/email_campaigns/golden_funnel') ?>">
+                      <i class="nav-icon fas fa-filter ml-3 mr-1 text-warning"></i> <p>Golden Funnel</p>
+                    </a>
+                  </li>
+                </ul>
               </li>
 
               <li class="nav-item">

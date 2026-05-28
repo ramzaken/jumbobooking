@@ -278,6 +278,7 @@ class Email_campaigns extends Home_Controller {
         $data = array();
         $data['page_title']  = 'Email Campaigns';
         $data['page']        = 'EmailCampaigns';
+        $data['page_sub']    = 'golden_funnel';
         $data['funnel']      = $funnel;
         $data['daily']       = $daily;
         $data['date_from']   = $date_from;
