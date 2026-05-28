@@ -502,6 +502,14 @@ $this->common_model->edit_option($updaterInfo, $user->id, 'users');
                         $data = $this->security->xss_clean($data);
                         $id = $this->common_model->insert($data, 'users');
 
+                        // Email campaign attribution — credit registration to campaign
+                        if ($this->session->userdata('ec_cid') && $this->session->userdata('ec_tok')) {
+                            $this->db->where('campaign_id', (int)$this->session->userdata('ec_cid'))
+                                     ->where('token', $this->session->userdata('ec_tok'))
+                                     ->where('registered_at', null)
+                                     ->update('email_campaign_recipients', ['registered_at' => my_date_now()]);
+                        }
+
                         $user = $this->auth_model->validate_id(md5($id));
                         $data = array(
                             'id' => $user->id,

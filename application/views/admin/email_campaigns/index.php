@@ -14,9 +14,14 @@
             <div class="card shadow-sm">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="mb-0"><i class="bi bi-envelope-paper mr-2"></i> Email Campaigns</h5>
-                    <a href="<?php echo base_url('admin/email_campaigns/create') ?>" class="btn btn-primary btn-sm">
-                        <i class="fas fa-plus"></i> New Campaign
-                    </a>
+                    <div>
+                        <a href="<?php echo base_url('admin/email_campaigns/golden_funnel') ?>" class="btn btn-warning btn-sm mr-1">
+                            <i class="fas fa-filter"></i> Golden Funnel
+                        </a>
+                        <a href="<?php echo base_url('admin/email_campaigns/create') ?>" class="btn btn-primary btn-sm">
+                            <i class="fas fa-plus"></i> New Campaign
+                        </a>
+                    </div>
                 </div>
                 <div class="card-body p-0">
                     <div class="table-responsive">

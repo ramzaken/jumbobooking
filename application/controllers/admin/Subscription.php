@@ -458,6 +458,14 @@ class Subscription extends Home_Controller {
         $pay_data = $this->security->xss_clean($pay_data);
         $this->common_model->insert($pay_data, 'payment');
 
+        // Email campaign attribution — credit payment to campaign
+        if ($this->session->userdata('ec_cid') && $this->session->userdata('ec_tok')) {
+            $this->db->where('campaign_id', (int)$this->session->userdata('ec_cid'))
+                     ->where('token', $this->session->userdata('ec_tok'))
+                     ->where('paid_at', null)
+                     ->update('email_campaign_recipients', ['paid_at' => my_date_now()]);
+            $this->session->unset_userdata(['ec_cid', 'ec_tok', 'ec_email']);
+        }
 
         //affiliate code
         $referral_settings = $this->admin_model->get_referral_settings();
