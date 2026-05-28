@@ -55,6 +55,12 @@
               </li>
 
               <li class="nav-item">
+                <a class="nav-link <?php if(isset($page) && $page == "EmailCampaigns"){echo "active";} ?>" href="<?php echo base_url('admin/email_campaigns') ?>">
+                  <i class="nav-icon bi bi-envelope-paper ml-2 mr-1"></i> <p>Email Campaigns</p>
+                </a>
+              </li>
+
+              <li class="nav-item">
                 <a href="<?php echo base_url('admin/settings/license') ?>" class="nav-link <?php if(isset($page_title) && $page_title == "License"){echo "active";} ?>">
                   <i class="lni lni-key nav-icon rt-90"></i>
                   <p><?php echo trans('license') ?></p>
