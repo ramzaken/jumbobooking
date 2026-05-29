@@ -5,7 +5,10 @@ use PHPMailer\PHPMailer\SMTP;
 use PHPMailer\PHPMailer\Exception;
 
 class Email_model extends CI_Model {
-    
+
+    // SES configuration set that publishes bounce/complaint events to SNS
+    const SES_CONFIG_SET = 'jumbobooking-campaign-set';
+
     function send_email($email_to, $subject, $message){
 
         if ($this->settings->mail_protocol == 'smtp') {
@@ -36,7 +39,11 @@ class Email_model extends CI_Model {
                 //Recipients
                 $mail->setFrom($this->settings->sender_mail, $this->settings->site_name);
                 $mail->addAddress($email_to);     //Add a recipient
-                
+
+                // Stamp the SES configuration set so bounces/complaints publish to SNS
+                if (strpos($this->settings->mail_host, 'amazonaws.com') !== false) {
+                    $mail->addCustomHeader('X-SES-CONFIGURATION-SET', self::SES_CONFIG_SET);
+                }
 
                 //Content
                 $mail->isHTML(true);                                          //Set email format to HTML
@@ -97,7 +104,12 @@ class Email_model extends CI_Model {
                 //Recipients
                 $mail->setFrom($this->settings->sender_mail, $this->settings->site_name);
                 $mail->addAddress($email_to);     //Add a recipient
-               
+
+                // Stamp the SES configuration set so bounces/complaints publish to SNS
+                if (strpos($this->settings->mail_host, 'amazonaws.com') !== false) {
+                    $mail->addCustomHeader('X-SES-CONFIGURATION-SET', self::SES_CONFIG_SET);
+                }
+
                 //Content
                 $mail->isHTML(true);                                  //Set email format to HTML
                 $mail->Subject = $subject;

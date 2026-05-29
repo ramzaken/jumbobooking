@@ -289,6 +289,14 @@ $starting_points = [
                                 <div id="manual_emails" class="<?php if($rtype!='manual') echo 'd-none'; ?>">
                                     <textarea name="manual_emails" class="form-control form-control-sm" rows="4"
                                               placeholder="One email per line"><?php echo html_escape($campaign->manual_emails ?? '') ?></textarea>
+                                    <div class="d-flex justify-content-between align-items-center mt-2">
+                                        <label class="btn btn-outline-secondary btn-sm mb-0" style="cursor:pointer">
+                                            <i class="bi bi-upload"></i> Import CSV
+                                            <input type="file" id="csv_import" accept=".csv,text/csv" hidden>
+                                        </label>
+                                        <a href="#" id="csv_sample" class="small"><i class="bi bi-download"></i> Sample CSV</a>
+                                    </div>
+                                    <small id="csv_status" class="text-success d-block mt-1"></small>
                                 </div>
                             </div>
                         </div>
@@ -465,4 +473,70 @@ document.querySelectorAll('#sched_recurring input[type=checkbox]').forEach(funct
         this.closest('label').classList.toggle('active', this.checked);
     });
 });
+
+// ── Manual list: CSV import + sample download ─────────────────────────────────
+(function() {
+    var fileInput  = document.getElementById('csv_import');
+    var sampleLink = document.getElementById('csv_sample');
+    var statusEl   = document.getElementById('csv_status');
+    var textarea   = document.querySelector('#manual_emails textarea');
+    if (!fileInput || !textarea) return;
+
+    var EMAIL_RE = /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i;
+
+    fileInput.addEventListener('change', function() {
+        var file = this.files[0];
+        this.value = ''; // allow re-importing the same file
+        if (!file) return;
+
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            var text  = e.target.result || '';
+            var found = [];
+            text.split(/\r\n|\r|\n/).forEach(function(line) {
+                if (!line.trim()) return;
+                // grab the first email-looking value in the row (handles email-only,
+                // name,email or email,name — any delimiter)
+                line.split(/[,;\t]/).some(function(cell) {
+                    var m = cell.match(EMAIL_RE);
+                    if (m) { found.push(m[0].trim()); return true; }
+                    return false;
+                });
+            });
+
+            // merge with whatever is already in the box, dedupe case-insensitively
+            var existing = textarea.value.split(/\n/).map(function(s){ return s.trim(); }).filter(Boolean);
+            var seen = {}, merged = [];
+            existing.concat(found).forEach(function(em) {
+                var k = em.toLowerCase();
+                if (em && !seen[k]) { seen[k] = 1; merged.push(em); }
+            });
+
+            textarea.value = merged.join('\n');
+            statusEl.textContent = found.length
+                ? 'Imported ' + found.length + ' email(s) · ' + merged.length + ' total.'
+                : 'No valid email addresses found in that file.';
+            statusEl.className = (found.length ? 'text-success' : 'text-danger') + ' d-block mt-1';
+        };
+        reader.readAsText(file);
+    });
+
+    if (sampleLink) {
+        sampleLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            var csv = 'email,name\n'
+                    + 'john@example.com,John Smith\n'
+                    + 'jane@example.com,Jane Doe\n'
+                    + 'no-name@example.com,\n';
+            var blob = new Blob([csv], { type: 'text/csv' });
+            var a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'email-list-sample.csv';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(a.href);
+        });
+    }
+})();
 </script>
